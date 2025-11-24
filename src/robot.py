@@ -55,35 +55,37 @@ def main():
     print("Starting Chess Game with Robot:\n")
     
     move_number = 1
-    while not chess_controller.board.is_game_over():
-        # Give current position to engine
-        chess_controller.stockfish.set_fen_position(chess_controller.board.fen())
-        
-        # Get best move from Stockfish
-        best_move = chess_controller.stockfish.get_best_move()
-        if best_move is None:
-            print("Engine returned no move. Stopping.")
-            break
-        
-        print(f"Move {move_number}: {best_move} ({'White' if chess_controller.board.turn else 'Black'})")
-        
-        # Convert to robot coordinates and get movement sequence
-        robot_sequence = chess_controller.get_robot_move_sequence(best_move)
-        print(f"Executing robot sequence for move: {best_move}")
-        
-        # Execute the robot sequence
-        execute_robot_sequence(bot, robot_sequence)
-        
-        # Apply move on chess board
-        move = chess.Move.from_uci(best_move)
-        if move not in chess_controller.board.legal_moves:
-            print("Illegal move from engine:", move)
-            break
-        
-        chess_controller.board.push(move)
-        
-        print(chess_controller.board, "\n")
-        move_number += 1
+    # while not chess_controller.board.is_game_over():
+    # Give current position to engine
+    chess_controller.stockfish.set_fen_position(chess_controller.board.fen())
+    
+    # Get best move from Stockfish
+    # best_move = chess_controller.stockfish.get_best_move()
+    best_move = "e2e4"  # Example move for testing
+
+    if best_move is None:
+        print("Engine returned no move. Stopping.")
+        # break
+    
+    print(f"Move {move_number}: {best_move} ({'White' if chess_controller.board.turn else 'Black'})")
+    
+    # Convert to robot coordinates and get movement sequence
+    robot_sequence = chess_controller.get_robot_move_sequence(best_move)
+    print(f"Executing robot sequence for move: {best_move}")
+    
+    # Execute the robot sequence
+    execute_robot_sequence(bot, robot_sequence)
+    
+    # Apply move on chess board
+    move = chess.Move.from_uci(best_move)
+    if move not in chess_controller.board.legal_moves:
+        print("Illegal move from engine:", move)
+        # break
+    
+    chess_controller.board.push(move)
+    
+    print(chess_controller.board, "\n")
+    move_number += 1
     
     print("Game over!")
     print("Result:", chess_controller.board.result())

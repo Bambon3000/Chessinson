@@ -91,7 +91,8 @@ def main():
 
     chess_controller.stockfish.set_fen_position(chess_controller.board.fen())
     
-    best_move = chess_controller.stockfish.get_best_move()
+    # best_move = chess_controller.stockfish.get_best_move()
+    best_move = "e2e4"  # Example move for testing
     if best_move is None:
         print("Engine returned no move. Stopping.")
     
