@@ -1,24 +1,11 @@
-import os
 import sys
-
-# 🔇 HARD silence ALSA / PortAudio (C-level stderr)
-devnull = os.open(os.devnull, os.O_WRONLY)
-saved_stderr_fd = os.dup(2)
-os.dup2(devnull, 2)
-os.close(devnull)
-
 import json
 import pyaudio
 from vosk import Model, KaldiRecognizer, SetLogLevel
 
-# Restore stderr for normal Python errors
-os.dup2(saved_stderr_fd, 2)
-os.close(saved_stderr_fd)
+SetLogLevel(-1)  # completely disable Vosk/Kaldi logging
 
-# 🔇 Silence Vosk / Kaldi
-SetLogLevel(-1)
-
-MODEL_PATH = "vosk-model-small-de-zamia-0.3" # Change if needed
+MODEL_PATH = "vosk-model-small-de-zamia-0.3"  # Change if needed
 
 def listen():
     print("Loading Vosk model...")
