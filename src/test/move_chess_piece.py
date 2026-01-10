@@ -67,8 +67,9 @@ class Chess_Robot:
 		above_z = 0.3
 		on_z    = 0.25
 
-		trash_x = 0.25
-		trash_y = -0.13
+		trash_x   = 0.25
+		trash_y   = -0.13
+		trash_yaw = -0.75
 		
 		bot = self.bot
 		
@@ -80,7 +81,7 @@ class Chess_Robot:
 		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
 		bot.gripper.grasp()
 		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
-		bot.arm.set_ee_pose_components(x=trash_x, y=trash_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=trash_x, y=trash_y, z=above_z, roll=0.0, pitch=0.0, yaw=-0.75)
 		bot.gripper.release()
 
 		# grab piece
