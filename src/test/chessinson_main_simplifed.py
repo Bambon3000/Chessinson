@@ -3,7 +3,7 @@ import chess
 from stockfish import Stockfish
 
 from chess_translator import ChessCoordinateTranslator
-from move_chess_piece import Chess_Robot
+from move_chess_test import Chess_Robot
 from speech_recognition import listen
 
 
@@ -71,10 +71,12 @@ class AsyncChessRobotController:
             print(f"❌ Illegal move: {uci_move}")
             return False
 
-        #if chess_piece_on_target:
-        #    await self.execute_robot_take(uci_move)
-        #else:
-        await self.execute_robot_move(uci_move)
+        chess_piece_on_target = self.board.piece_at(move.to_square) is not None
+
+        if chess_piece_on_target:
+            await self.execute_robot_take(uci_move)
+        else:
+            await self.execute_robot_move(uci_move)
         
         self.board.push(move)
         return True
