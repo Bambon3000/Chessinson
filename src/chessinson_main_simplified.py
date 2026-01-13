@@ -3,7 +3,7 @@ import chess
 from stockfish import Stockfish
 
 from chess_translator import ChessCoordinateTranslator
-from move_chess_test import Chess_Robot
+from move_chess_piece import Chess_Robot
 from speech_recognition import listen
 
 

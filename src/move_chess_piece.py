@@ -42,7 +42,7 @@ class Chess_Robot:
 		
 	def robot_move(self, from_x, to_x, from_y, to_y):
 		above_z = 0.35
-		on_z    = 0.3
+		grab_distance = 0.5
 		
 		bot = self.bot
 		
@@ -51,21 +51,21 @@ class Chess_Robot:
 		
 		# grab piece
 		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=-grab_offset)
 		bot.gripper.grasp()
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=grab_offset)
 		
 		# move piece to target position
 		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=-grab_offset)
 		bot.gripper.release()
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=grab_offset)
 		
 		bot.arm.go_to_home_pose()
 
 	def robot_take(self, from_x, to_x, from_y, to_y):
 		above_z = 0.35
-		on_z    = 0.3
+		grab_offset = 0.5
 
 		trash_x   = 0.25
 		trash_y   = -0.13
@@ -78,23 +78,23 @@ class Chess_Robot:
 
 		# grab enemy piece
 		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=-grab_offset)
 		bot.gripper.grasp()
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=grab_offset)
 		bot.arm.set_ee_pose_components(x=trash_x, y=trash_y, z=above_z, roll=0.0, pitch=0.0, yaw=-0.75)
 		bot.gripper.release()
 
 		# grab piece
 		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=-grab_offset)
 		bot.gripper.grasp()
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=grab_offset)
 		
 		# move piece to target position
 		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=-grab_offset)
 		bot.gripper.release()
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_cartesian_trajectory(z=grab_offset)
 		
 		bot.arm.go_to_home_pose()
 
