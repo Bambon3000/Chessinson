@@ -4,14 +4,14 @@ class ChessCoordinateTranslator:
     def __init__(self):
         # File (letter) to Y coordinate mapping
         self.file_to_y = {
-            'a': -0.112, 'b': -0.080, 'c': -0.048, 'd': -0.016,
-            'e': 0.016, 'f': 0.048, 'g': 0.080, 'h': 0.112
+            'h': -0.112, 'g': -0.080, 'f': -0.048, 'e': -0.016,
+            'd': 0.016, 'c': 0.048, 'b': 0.080, 'a': 0.112
         }
         
         # Rank (number) to X coordinate mapping  
         self.rank_to_x = {
-            '1': 0.25, '2': 0.30, '3': 0.35, '4': 0.40,
-            '5': 0.45, '6': 0.50, '7': 0.55, '8': 0.60
+            '1': 0.2, '2': 0.25, '3': 0.3, '4': 0.35,
+            '5': 0.4, '6': 0.45, '7': 0.5, '8': 0.55
         }
     
     def chess_to_robot_coords(self, chess_square):
