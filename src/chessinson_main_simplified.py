@@ -3,7 +3,7 @@ import chess
 from stockfish import Stockfish
 
 from chess_translator import ChessCoordinateTranslator
-from move_chess_piece import Chess_Robot
+from move_chess_test import Chess_Robot
 from speech_recognition import listen
 
 
@@ -54,13 +54,30 @@ class AsyncChessRobotController:
         )
         await asyncio.sleep(0.1)
 
+    async def execute_robot_take(self, uci_move: str) -> None:
+        move = self.translator.parse_chess_move(uci_move)
+        self.robot.robot_take(
+            move["from"]["x"],
+            move["to"]["x"],
+            move["from"]["y"],
+            move["to"]["y"],
+        )
+        await asyncio.sleep(0.1)
+
     async def make_move(self, uci_move: str) -> bool:
         move = chess.Move.from_uci(uci_move)
+        print(f"Chess Move: {move}")
         if move not in self.board.legal_moves:
             print(f"❌ Illegal move: {uci_move}")
             return False
 
-        await self.execute_robot_move(uci_move)
+        chess_piece_on_target = self.board.piece_at(move.to_square) is not None
+
+        if chess_piece_on_target:
+            await self.execute_robot_take(uci_move)
+        else:
+            await self.execute_robot_move(uci_move)
+        
         self.board.push(move)
         return True
 
