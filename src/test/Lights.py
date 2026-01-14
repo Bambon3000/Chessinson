@@ -9,16 +9,20 @@ from serial.tools import list_ports
 
 class Light:
     """
-    Steuert den ESP32 LED Controller über USB-Serial.
+    ESP32 LED Controller via USB-Serial.
 
-    ESP32 Commands (laut Boot Output):
-      red_on/red_off, yellow_on/yellow_off, green_on/green_off, all_off
+    ESP32 versteht:
+      red_on / red_off
+      yellow_on / yellow_off
+      green_on / green_off
+      all_off
 
-    READY  -> green_on (dauerhaft)
-    MOVE   -> green blink (Hintergrund-Thread)
-    ILLEGAL-> red blink   (Hintergrund-Thread)
-    UNKNOWN-> yellow blink( Hinterg.-Thread)
-    OFF    -> all_off
+    Logik:
+      READY    -> grün dauerhaft (solltest du NUR während "listen" setzen)
+      MOVE     -> grün blinkt (non-blocking)
+      ILLEGAL  -> rot dauerhaft (X Sekunden), dann OFF
+      UNKNOWN  -> gelb dauerhaft (X Sekunden), dann OFF
+      OFF      -> alles aus
     """
 
     def __init__(
@@ -27,26 +31,33 @@ class Light:
         baudrate: int = 115200,
         auto_connect: bool = True,
         boot_wait: float = 1.5,
+        hold_seconds: float = 2.5,  # ⏱️ Dauer für rot/gelb
     ):
-        self.baudrate = baudrate
         self.port = port
+        self.baudrate = baudrate
         self.boot_wait = boot_wait
+        self.hold_seconds = hold_seconds
 
         self.ser: Optional[serial.Serial] = None
         self._lock = threading.Lock()
 
-        # Blink worker
+        # Blink-Thread
         self._blink_thread: Optional[threading.Thread] = None
         self._stop_blink = threading.Event()
+
+        # Timer für rot/gelb
+        self._timer: Optional[threading.Timer] = None
 
         if auto_connect:
             self.connect()
 
-    # ------------------------
+    # ------------------------------------------------------------------
     # Serial Connection
-    # ------------------------
+    # ------------------------------------------------------------------
+
     def _auto_detect_port(self) -> Optional[str]:
         candidates = []
+
         for p in list_ports.comports():
             dev = p.device
             desc = (p.description or "").lower()
@@ -56,10 +67,14 @@ class Light:
                any(x in hwid for x in ["cp210", "ch340", "ftdi"]):
                 candidates.append(dev)
 
-        # Fallback typische Namen
+        # Fallback
         if not candidates:
-            for dev in ["/dev/ttyUSB0", "/dev/ttyACM0", "/dev/ttyUSB1", "/dev/ttyACM1"]:
-                candidates.append(dev)
+            candidates = [
+                "/dev/ttyUSB0",
+                "/dev/ttyACM0",
+                "/dev/ttyUSB1",
+                "/dev/ttyACM1",
+            ]
 
         for dev in candidates:
             try:
@@ -85,7 +100,7 @@ class Light:
         self.ser = serial.Serial(port, self.baudrate, timeout=0.2)
         self.port = port
 
-        # Reset vermeiden (bei vielen ESP32 Boards relevant)
+        # Reset vermeiden
         try:
             self.ser.setDTR(False)
             self.ser.setRTS(False)
@@ -93,6 +108,7 @@ class Light:
             pass
 
         time.sleep(self.boot_wait)
+
         try:
             self.ser.reset_input_buffer()
             self.ser.reset_output_buffer()
@@ -101,87 +117,117 @@ class Light:
 
     def close(self) -> None:
         self._stop_blinking()
+        self._cancel_timer()
         if self.ser and self.ser.is_open:
             self.ser.close()
 
-    # ------------------------
+    # ------------------------------------------------------------------
     # Low-level send
-    # ------------------------
+    # ------------------------------------------------------------------
+
     def _send(self, cmd: str) -> None:
-        """
-        Sendet einen Command an den ESP32.
-        """
         with self._lock:
             if not self.ser or not self.ser.is_open:
                 self.connect()
 
-            data = (cmd + "\n").encode("utf-8")
             try:
-                self.ser.write(data)
+                self.ser.write((cmd + "\n").encode("utf-8"))
                 self.ser.flush()
             except Exception:
-                # Reconnect 1x
-                try:
-                    self.close()
-                except Exception:
-                    pass
+                # einmal reconnect versuchen
+                self.close()
                 self.connect()
-                self.ser.write(data)
+                self.ser.write((cmd + "\n").encode("utf-8"))
                 self.ser.flush()
 
-    # ------------------------
-    # Blinking (non-blocking)
-    # ------------------------
+    # ------------------------------------------------------------------
+    # Blink handling (non-blocking)
+    # ------------------------------------------------------------------
+
     def _stop_blinking(self):
         self._stop_blink.set()
-        t = self._blink_thread
-        if t and t.is_alive():
-            t.join(timeout=1.0)
+        if self._blink_thread and self._blink_thread.is_alive():
+            self._blink_thread.join(timeout=1.0)
         self._blink_thread = None
         self._stop_blink.clear()
 
-    def _start_blink(self, on_cmd: str, off_cmd: str, on: float = 0.15, off: float = 0.15):
+    def _start_blink(
+        self,
+        on_cmd: str,
+        off_cmd: str,
+        on_time: float = 0.15,
+        off_time: float = 0.15,
+    ):
         self._stop_blinking()
 
         def worker():
             while not self._stop_blink.is_set():
                 self._send(on_cmd)
-                if self._stop_blink.wait(on):
+                if self._stop_blink.wait(on_time):
                     break
                 self._send(off_cmd)
-                if self._stop_blink.wait(off):
+                if self._stop_blink.wait(off_time):
                     break
 
         self._blink_thread = threading.Thread(target=worker, daemon=True)
         self._blink_thread.start()
 
-    # ------------------------
-    # Public high-level states
-    # ------------------------
+    # ------------------------------------------------------------------
+    # Timer handling (rot/gelb halten -> dann OFF)
+    # ------------------------------------------------------------------
+
+    def _cancel_timer(self):
+        if self._timer:
+            try:
+                self._timer.cancel()
+            except Exception:
+                pass
+            self._timer = None
+
+    def _hold_then_off(self):
+        self._cancel_timer()
+
+        def back_to_off():
+            self.off()
+
+        self._timer = threading.Timer(self.hold_seconds, back_to_off)
+        self._timer.daemon = True
+        self._timer.start()
+
+    # ------------------------------------------------------------------
+    # Public States
+    # ------------------------------------------------------------------
+
     def off(self) -> None:
         self._stop_blinking()
+        self._cancel_timer()
         self._send("all_off")
 
     def ready(self) -> None:
-        # Grün dauerhaft
+        # Grün dauerhaft (nur setzen, wenn wirklich gesprochen werden kann)
         self._stop_blinking()
+        self._cancel_timer()
         self._send("all_off")
         self._send("green_on")
 
     def move(self) -> None:
         # Grün blinkt
+        self._cancel_timer()
         self._send("all_off")
         self._start_blink("green_on", "green_off")
 
     def illegal(self) -> None:
-        # 🔴 Rot dauerhaft (kein Blinken)
+        # Rot dauerhaft für X Sekunden, dann OFF
         self._stop_blinking()
+        self._cancel_timer()
         self._send("all_off")
         self._send("red_on")
+        self._hold_then_off()
 
     def unknown(self) -> None:
-        # 🟡 Gelb dauerhaft (kein Blinken)
+        # Gelb dauerhaft für X Sekunden, dann OFF
         self._stop_blinking()
+        self._cancel_timer()
         self._send("all_off")
         self._send("yellow_on")
-
+        self._hold_then_off()
