@@ -176,9 +176,9 @@ class Light:
     def illegal(self) -> None:
         # Rot blinkt
         self._send("all_off")
-        self._s("red_on", "red_off")
+        self._send("red_on")
 
     def unknown(self) -> None:
         # Gelb blinkt
         self._send("all_off")
-        self._send("yellow_on", "yellow_off")
+        self._send("yellow_on")
