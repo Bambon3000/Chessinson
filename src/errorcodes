@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/chessinson_main_simplified_test.py", line 214, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/home/ubuntu/chessinson_main_simplified_test.py", line 177, in main
+    controller = AsyncChessRobotController()
+  File "/home/ubuntu/chessinson_main_simplified_test.py", line 45, in __init__
+    self.lights = Light(port="/dev/ttyUSB1")
+  File "/home/ubuntu/Lights.py", line 43, in __init__
+    self.connect()
+  File "/home/ubuntu/Lights.py", line 85, in connect
+    self.ser = serial.Serial(port, self.baudrate, timeout=0.2)
+AttributeError: module 'serial' has no attribute 'Serial'
+Exception in thread Thread-1 (spin):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
