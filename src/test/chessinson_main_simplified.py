@@ -24,7 +24,6 @@ class AsyncChessRobotController:
 
     def __init__(self):
         self.loop = asyncio.get_event_loop()
-
         self.board = chess.Board()
         self.translator = ChessCoordinateTranslator()
 
@@ -40,12 +39,13 @@ class AsyncChessRobotController:
             },
         )
 
-        # 🔦 Lights (rot/gelb halten automatisch, grün nur beim Zuhören)
-        self.lights = Light(auto_connect=True, hold_seconds=3.0)
+        # ✅ Lights via ESP32 Serial
+        # Wenn Auto-Detect nicht klappt: Light(port="/dev/ttyUSB0")
+        self.lights = Light(port="/dev/ttyUSB1")
 
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
     # Robot control
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
 
     async def execute_robot_move(self, uci_move: str) -> None:
         move = self.translator.parse_chess_move(uci_move)
@@ -73,10 +73,11 @@ class AsyncChessRobotController:
 
         if move not in self.board.legal_moves:
             print(f"❌ Illegal move: {uci_move}")
+            # 🔴 illegal -> red blink
             self.lights.illegal()
             return False
 
-        # 🟢 Bewegung läuft → grün blinkt
+        # 🟢 move in progress -> green blink
         self.lights.move()
 
         chess_piece_on_target = self.board.piece_at(move.to_square) is not None
@@ -87,14 +88,11 @@ class AsyncChessRobotController:
             await self.execute_robot_move(uci_move)
 
         self.board.push(move)
-
-        # Nach Bewegung LEDs aus (bereit wird später explizit gesetzt)
-        self.lights.off()
         return True
 
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
     # User input
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
 
     def spoken_to_uci(self, spoken: str) -> str | None:
         tokens = spoken.lower().split()
@@ -110,19 +108,16 @@ class AsyncChessRobotController:
 
     async def get_user_move_speech(self) -> str | None:
         while True:
-            # 🟢 NUR während aktivem Zuhören
+            # 🟢 ready for speech
             self.lights.ready()
 
             spoken = await self.loop.run_in_executor(None, listen)
-
-            # Nach Zuhören: Licht aus
-            self.lights.off()
-
             uci = self.spoken_to_uci(spoken)
 
             if not uci:
                 print("❌ Could not understand move. Please repeat.")
-                self.lights.unknown()  # 🟡 leuchtet länger, dann OFF
+                # 🟡 unknown speech
+                self.lights.unknown()
                 continue
 
             move = chess.Move.from_uci(uci)
@@ -130,11 +125,12 @@ class AsyncChessRobotController:
                 return uci
 
             print(f"❌ Illegal move: {uci}")
-            self.lights.illegal()  # 🔴 leuchtet länger, dann OFF
+            # 🔴 illegal
+            self.lights.illegal()
 
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
     # Stockfish
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
 
     async def get_stockfish_move(self) -> str | None:
         def _get_best():
@@ -152,9 +148,9 @@ class AsyncChessRobotController:
         print(f"🤖 Stockfish plays: {best}")
         return best
 
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
     # Cleanup
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------------ #
 
     def close(self):
         try:
