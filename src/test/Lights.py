@@ -174,11 +174,14 @@ class Light:
         self._start_blink("green_on", "green_off")
 
     def illegal(self) -> None:
-        # Rot blinkt
+        # 🔴 Rot dauerhaft (kein Blinken)
+        self._stop_blinking()
         self._send("all_off")
-        self._start_blink("red_on", "red_off")
+        self._send("red_on")
 
     def unknown(self) -> None:
-        # Gelb blinkt
+        # 🟡 Gelb dauerhaft (kein Blinken)
+        self._stop_blinking()
         self._send("all_off")
-        self._start_blink("yellow_on", "yellow_off")
+        self._send("yellow_on")
+
