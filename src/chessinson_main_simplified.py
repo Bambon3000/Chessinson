@@ -64,7 +64,7 @@ class AsyncChessRobotController:
         )
         await asyncio.sleep(0.1)
 
-    # async def make_move(self, uci_move: str) -> bool:
+    async def make_move(self, uci_move: str) -> bool:
         move = chess.Move.from_uci(uci_move)
         print(f"Chess Move: {move}")
         if move not in self.board.legal_moves:
@@ -78,29 +78,6 @@ class AsyncChessRobotController:
         else:
             await self.execute_robot_move(uci_move)
         
-        self.board.push(move)
-        return True
-
-    async def make_move(self, uci_move: str) -> bool:
-        try:
-            move = chess.Move.from_uci(uci_move)
-        except ValueError:
-            print(f"❌ Invalid UCI format: {uci_move}")
-            return False
-
-        print(f"Chess Move: {move}")
-
-        if move not in self.board.legal_moves:
-            print(f"❌ Illegal move: {uci_move}")
-            return False
-
-        chess_piece_on_target = self.board.piece_at(move.to_square) is not None
-
-        if chess_piece_on_target:
-            await self.execute_robot_take(uci_move)
-        else:
-            await self.execute_robot_move(uci_move)
-
         self.board.push(move)
         return True
 
@@ -120,25 +97,20 @@ class AsyncChessRobotController:
 
         return "".join(cleaned) if len(cleaned) == 4 else None
 
-async def get_user_move_speech(self) -> str | None:
-    while True:
-        spoken = await self.loop.run_in_executor(None, listen)
-        uci = self.spoken_to_uci(spoken)
+    async def get_user_move_speech(self) -> str | None:
+        while True:
+            spoken = await self.loop.run_in_executor(None, listen)
+            uci = self.spoken_to_uci(spoken)
 
-        if not uci:
-            print("❌ Could not understand move. Please repeat.")
-            continue
+            if not uci:
+                print("❌ Could not understand move. Please repeat.")
+                continue
 
-        try:
             move = chess.Move.from_uci(uci)
-        except ValueError:
-            print(f"❌ Invalid UCI format: {uci}")
-            continue
+            if move in self.board.legal_moves:
+                return uci
 
-        if move in self.board.legal_moves:
-            return uci
-
-        print(f"❌ Illegal move: {uci}")
+            print(f"❌ Illegal move: {uci}")
 
     # ------------------------------------------------------------------ #
     # Stockfish
