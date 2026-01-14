@@ -23,7 +23,7 @@ class Light:
 
     def __init__(
         self,
-        port: Optional[str] = None,
+        port: "/dev/ttyUSB1",
         baudrate: int = 115200,
         auto_connect: bool = True,
         boot_wait: float = 1.5,
@@ -63,7 +63,7 @@ class Light:
 
         for dev in candidates:
             try:
-                s = serial.Serial(dev, self.baudrate, timeout=0.2)
+                ser = serial.Serial(port, self.baudrate, timeout=0.2)
                 s.close()
                 return dev
             except Exception:
@@ -176,9 +176,9 @@ class Light:
     def illegal(self) -> None:
         # Rot blinkt
         self._send("all_off")
-        self._send("red_on")
+        self._start_blink("red_on", "red_off")
 
     def unknown(self) -> None:
         # Gelb blinkt
         self._send("all_off")
-        self._send("yellow_on")
+        self._start_blink("yellow_on", "yellow_off")
