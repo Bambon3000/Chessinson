@@ -3,9 +3,9 @@ import chess
 from stockfish import Stockfish
 
 from chess_translator import ChessCoordinateTranslator
-from move_chess_test import Chess_Robot
+from move_chess_piece import Chess_Robot
 from speech_recognition import listen
-from lights import Light
+from Lights import Light
 
 STOCKFISH_PATH = "/home/ubuntu/stockfish/stockfish-android-armv8/stockfish/stockfish-android-armv8"
 
@@ -40,13 +40,12 @@ class AsyncChessRobotController:
             },
         )
 
-        # ✅ Lights via ESP32 Serial
-        # Wenn Auto-Detect nicht klappt: Light(port="/dev/ttyUSB0")
-        self.lights = Light(auto_connect=True)
+        # 🔦 Lights (rot/gelb halten automatisch, grün nur beim Zuhören)
+        self.lights = Light(auto_connect=True, hold_seconds=3.0)
 
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
     # Robot control
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
 
     async def execute_robot_move(self, uci_move: str) -> None:
         move = self.translator.parse_chess_move(uci_move)
@@ -74,11 +73,10 @@ class AsyncChessRobotController:
 
         if move not in self.board.legal_moves:
             print(f"❌ Illegal move: {uci_move}")
-            # 🔴 illegal -> red blink
             self.lights.illegal()
             return False
 
-        # 🟢 move in progress -> green blink
+        # 🟢 Bewegung läuft → grün blinkt
         self.lights.move()
 
         chess_piece_on_target = self.board.piece_at(move.to_square) is not None
@@ -89,11 +87,14 @@ class AsyncChessRobotController:
             await self.execute_robot_move(uci_move)
 
         self.board.push(move)
+
+        # Nach Bewegung LEDs aus (bereit wird später explizit gesetzt)
+        self.lights.off()
         return True
 
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
     # User input
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
 
     def spoken_to_uci(self, spoken: str) -> str | None:
         tokens = spoken.lower().split()
@@ -109,16 +110,19 @@ class AsyncChessRobotController:
 
     async def get_user_move_speech(self) -> str | None:
         while True:
-            # 🟢 ready for speech
+            # 🟢 NUR während aktivem Zuhören
             self.lights.ready()
 
             spoken = await self.loop.run_in_executor(None, listen)
+
+            # Nach Zuhören: Licht aus
+            self.lights.off()
+
             uci = self.spoken_to_uci(spoken)
 
             if not uci:
                 print("❌ Could not understand move. Please repeat.")
-                # 🟡 unknown speech
-                self.lights.unknown()
+                self.lights.unknown()  # 🟡 leuchtet länger, dann OFF
                 continue
 
             move = chess.Move.from_uci(uci)
@@ -126,12 +130,11 @@ class AsyncChessRobotController:
                 return uci
 
             print(f"❌ Illegal move: {uci}")
-            # 🔴 illegal
-            self.lights.illegal()
+            self.lights.illegal()  # 🔴 leuchtet länger, dann OFF
 
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
     # Stockfish
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
 
     async def get_stockfish_move(self) -> str | None:
         def _get_best():
@@ -149,9 +152,9 @@ class AsyncChessRobotController:
         print(f"🤖 Stockfish plays: {best}")
         return best
 
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
     # Cleanup
-    # ------------------------------------------------------------------ #
+    # ------------------------------------------------------------------
 
     def close(self):
         try:
