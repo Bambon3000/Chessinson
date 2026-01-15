@@ -6,10 +6,23 @@ from chess_translator import ChessCoordinateTranslator
 from move_chess_piece import Chess_Robot
 from speech_recognition import listen
 from Lights import Light
+from AsyncLight import AsyncLight 
 
 STOCKFISH_PATH = "/home/ubuntu/stockfish/stockfish-android-armv8/stockfish/stockfish-android-armv8"
 
+# start venv 
+# source venv/bin/activate
 
+# start chess:
+# python3 chessinson_main_simplified_test.py
+
+
+# start robot 
+# ros2 launch interbotix_xsarm_control xsarm_control.launch.py robot_model:=wx250s use_sim:=true
+
+# check if port is free: <lsof /dev/ttyUSB0> or with <lsof /dev/ttyUSB1>
+ 
+ 
 class AsyncChessRobotController:
     GERMAN_NUMBERS = {
         "eins": "1",
@@ -41,7 +54,9 @@ class AsyncChessRobotController:
 
         # ✅ Lights via ESP32 Serial
         # Wenn Auto-Detect nicht klappt: Light(port="/dev/ttyUSB0")
-        self.lights = Light(port="/dev/ttyUSB1")
+        self.lights = Light()
+        self.lights = Light(self.lights, self.loop)
+
 
     # ------------------------------------------------------------------ #
     # Robot control
@@ -75,9 +90,11 @@ class AsyncChessRobotController:
             print(f"❌ Illegal move: {uci_move}")
             # 🔴 illegal -> red blink
             self.lights.illegal()
+            await asyncio.sleep(2.5)
             return False
 
         # 🟢 move in progress -> green blink
+        # self.lights.move()
         self.lights.move()
 
         chess_piece_on_target = self.board.piece_at(move.to_square) is not None
@@ -126,7 +143,9 @@ class AsyncChessRobotController:
 
             print(f"❌ Illegal move: {uci}")
             # 🔴 illegal
+            # make async none block 
             self.lights.illegal()
+            await asyncio.sleep(2.5)
 
     # ------------------------------------------------------------------ #
     # Stockfish
@@ -152,7 +171,7 @@ class AsyncChessRobotController:
     # Cleanup
     # ------------------------------------------------------------------ #
 
-    def close(self):
+    async def close(self):
         try:
             self.lights.off()
             self.lights.close()
