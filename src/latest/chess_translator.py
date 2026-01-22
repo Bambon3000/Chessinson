@@ -13,14 +13,14 @@ class ChessCoordinateTranslator:
             'a': 0.2, 'b': 0.25, 'c': 0.3, 'd': 0.35,
             'e': 0.4, 'f': 0.45, 'g': 0.5, 'h': 0.55
         }
-    
+
+    # Convert chess square (e.g., 'e2') to robot coordinates (x, y)
     def chess_to_robot_coords(self, chess_square):
-        """Convert chess square (e.g., 'e2') to robot coordinates (x, y)"""
         if len(chess_square) != 2:
             raise ValueError(f"Invalid chess square: {chess_square}")
         
-        rank_char = chess_square[0].lower()
-        file_char = chess_square[1]
+        rank_char = chess_square[0].lower() # e.g. 'e'
+        file_char = chess_square[1]         # e.g. '2'
         
         if file_char not in self.file_to_y:
             raise ValueError(f"Invalid file: {file_char}")
@@ -32,16 +32,16 @@ class ChessCoordinateTranslator:
         
         return x, y
     
+    # Parse UCI move (e.g., 'e2e4') to extract source and target coordinates
     def parse_chess_move(self, uci_move):
-        """Parse UCI move (e.g., 'e2e4') to extract source and target coordinates"""
         if len(uci_move) != 4:
             raise ValueError(f"Invalid UCI move: {uci_move}")
         
         from_square = uci_move[0:2]  # e.g., 'e2'
         to_square = uci_move[2:4]    # e.g., 'e4'
         
-        from_x, from_y = self.chess_to_robot_coords(from_square)
-        to_x, to_y = self.chess_to_robot_coords(to_square)
+        from_x, from_y = self.chess_to_robot_coords(from_square) # x and y coordinates for origin, e.g. 'e2'
+        to_x, to_y = self.chess_to_robot_coords(to_square)       # x and y coordinates for target, e.g. 'e4'
         
         return {
             'from': {'x': from_x, 'y': from_y},

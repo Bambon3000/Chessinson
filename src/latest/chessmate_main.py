@@ -127,7 +127,6 @@ class AsyncChessRobotController:
 
     async def get_user_move_speech(self) -> str | None:
         while True:
-            #self.lights.speach_ready()
 
             spoken = await self.loop.run_in_executor(None, listen)
             uci = self.spoken_to_uci(spoken)
@@ -202,7 +201,7 @@ async def main():
     move_number = 1
 
     print("\n🎮 ASYNC CHESS ROBOT GAME")
-    print("You play White. Speak your moves.\n")
+    print("You play White. Say your moves.\n")
 
     try:
         while not controller.board.is_game_over():
@@ -210,7 +209,7 @@ async def main():
             print(f"\n📋 MOVE {move_number}")
 
             if controller.board.turn == chess.BLACK:
-                print("🤖 Stockfish thinking...")
+                print("🤖 Stockfish is thinking...")
                 move = await controller.get_stockfish_move()
             else:
                 print("👤 Your turn...")

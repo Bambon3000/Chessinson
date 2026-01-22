@@ -9,12 +9,13 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 from Lights import Light
 SetLogLevel(-1)  # completely disable Vosk/Kaldi logging
 
-MODEL_PATH = "vosk-model-small-de-zamia-0.3"  # Change if needed
+MODEL_PATH = "vosk-model-small-de-zamia-0.3"
 
 def listen():
     print("Loading Vosk model...")
     model = Model(MODEL_PATH)
 
+    # Whitelist
     allowed = [
         "a", "b", "c", "d", "e", "f", "g", "h",
         "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht"
@@ -37,7 +38,7 @@ def listen():
 
     print("🎤 Please say your move...")
     # status 
-    lights.speach_ready()
+    lights.speech_ready()
 
     try:
         while True:

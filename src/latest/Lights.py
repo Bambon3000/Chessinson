@@ -10,15 +10,15 @@ from serial.tools import list_ports
 
 class Light:
     """
-    Steuert den ESP32 LED Controller über USB-Serial.
+    Controls the ESP32 LED Controller via USB-Serial.
 
-    ESP32 Commands (laut Boot Output):
+    ESP32 Commands (according to Boot Output):
       red_on/red_off, yellow_on/yellow_off, green_on/green_off, all_off
 
-    READY  -> green_on (dauerhaft)
-    MOVE   -> green blink (Hintergrund-Thread)
-    ILLEGAL-> red blink   (Hintergrund-Thread)
-    UNKNOWN-> yellow blink( Hinterg.-Thread)
+    READY  -> green_on (perpetual)
+    MOVE   -> green blink (background thread)
+    ILLEGAL-> red blink   (background thread)
+    UNKNOWN-> yellow blink(background thread)
     OFF    -> all_off
     """
 
@@ -57,7 +57,7 @@ class Light:
                any(x in hwid for x in ["cp210", "ch340", "ftdi"]):
                 candidates.append(dev)
 
-        # Fallback typische Namen
+        # Fallback to usual names
         if not candidates:
             for dev in ["/dev/ttyUSB0", "/dev/ttyACM0", "/dev/ttyUSB1", "/dev/ttyACM1"]:
                 candidates.append(dev)
@@ -79,14 +79,14 @@ class Light:
         port = self.port or self._auto_detect_port()
         if not port:
             raise RuntimeError(
-                "Kein ESP32-Serial-Port gefunden. "
-                "Setze port='/dev/ttyUSB0' oder prüfe `ls -l /dev/ttyUSB* /dev/ttyACM*`."
+                "No ESP32 Serial Port found. "
+                "Set port='/dev/ttyUSB0' or check `ls -l /dev/ttyUSB* /dev/ttyACM*`."
             )
 
         self.ser = serial.Serial(port, self.baudrate, timeout=0.2)
         self.port = port
 
-        # Reset vermeiden (bei vielen ESP32 Boards relevant)
+        # prevent reset (relevant for many ESP32 boards)
         try:
             self.ser.setDTR(False)
             self.ser.setRTS(False)
@@ -110,7 +110,7 @@ class Light:
     # ------------------------
     def _send(self, cmd: str) -> None:
         """
-        Sendet einen Command an den ESP32.
+        Sends a command to the ESP32.
         """
         with self._lock:
             if not self.ser or not self.ser.is_open:
@@ -163,31 +163,31 @@ class Light:
         self._stop_blinking()
         self._send("all_off")
 
-    def speach_ready(self) -> None:
+    def speech_ready(self) -> None:
 
         self._stop_blinking()
         self._send("all_off")
         self._send("green_on")
         
     def ready(self) -> None:
-        # Grün dauerhaft
+        # green
         self._stop_blinking()
         self._send("all_off")
         self._send("yellow_on")
 
     def move(self) -> None:
-        # Grün blinkt
+        # blinking green
         self._send("all_off")
         self._start_blink("green_on", "green_off")
 
     def illegal(self) -> None:
-        # Rot 
+        # red
         self._stop_blinking()
         self._send("all_off")
         self._send("red_on")
 
     def unknown(self) -> None:
-        # Gelb 
+        # yellow 
         self._stop_blinking()
         self._send("all_off")
         self._send("yellow_on")
