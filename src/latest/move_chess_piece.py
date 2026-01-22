@@ -45,23 +45,23 @@ class Chess_Robot:
 		
 		# --- grab piece ---
 		# above origin
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z)
 		# on origin
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=on_z)
 		# grab piece
 		bot.gripper.grasp()
 		# above origin
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z)
 		
 		# --- move piece to target position ---
 		# above target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z)
 		# on target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z)
 		# release piece
 		bot.gripper.release()
 		# above target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z)
 		# back to resting position
 		bot.arm.go_to_sleep_pose()
 
@@ -91,37 +91,37 @@ class Chess_Robot:
 
 		# --- grab and dispose of enemy piece ---
 		# above target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z)
 		# on target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z)
 		# grab piece
 		bot.gripper.grasp()
 		# above target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z)
 		# dropoff spot
-		bot.arm.set_ee_pose_components(x=trash_x, y=trash_y, z=above_z, roll=0.0, pitch=0.0, yaw=-0.75)
+		bot.arm.set_ee_pose_components(x=trash_x, y=trash_y, z=above_z)
 		# release piece
 		bot.gripper.release()
 
 		# --- grab piece ---
 		# above origin
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z)
 		# on origin
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=on_z)
 		# grab piece
 		bot.gripper.grasp()
 		# above origin
-		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=from_x, y=from_y, z=above_z)
 		
 		# --- move piece to target position ---
 		# above target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z)
 		# on target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=on_z)
 		# release piece
 		bot.gripper.release()
 		# above target
-		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z, roll=0.0, pitch=0.0, yaw=0.0)
+		bot.arm.set_ee_pose_components(x=to_x, y=to_y, z=above_z)
 		# back to resting position
 		bot.arm.go_to_sleep_pose()
 
