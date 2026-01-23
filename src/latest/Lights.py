@@ -164,13 +164,12 @@ class Light:
         self._send("all_off")
 
     def speech_ready(self) -> None:
-
+        # green
         self._stop_blinking()
         self._send("all_off")
         self._send("green_on")
         
     def ready(self) -> None:
-        # green
         self._stop_blinking()
         self._send("all_off")
         self._send("yellow_on")
