@@ -6,7 +6,6 @@ from chess_translator import ChessCoordinateTranslator
 from move_chess_piece import Chess_Robot
 from speech_recognition import listen
 from Lights import Light
-from AsyncLight import AsyncLight 
 
 STOCKFISH_PATH = "/home/ubuntu/stockfish/stockfish-android-armv8/stockfish/stockfish-android-armv8"
 

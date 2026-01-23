@@ -34,8 +34,8 @@ class Chess_Robot:
 		
 		# height where gripper can grab pieces
 		on_z_close = 0.26 # height to grab a piece when close
-		on_z_far = 0.30   # height to grab a piece when far
-		on_z = on_z_close if from_x < 0.4 else on_z_far # decide whether the piece is close or far
+		on_z_far = 0.29   # height to grab a piece when far
+		on_z = on_z_close if from_x < 0.45 else on_z_far # decide whether the piece is close or far
 		
 		bot = self.bot
 		
